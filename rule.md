@@ -18,6 +18,7 @@
 *   **交互逻辑**：
     *   实现一个 `handleNext` 点击事件，点击屏幕任意位置即自动切换到下一张幻灯片。
     *   顶部必须带有进度指示条。
+    *   **禁止使用任何 CSS 动画**（如 `animate-bounce`），因为页面最终会被静态截图。
 
 ## 2. 排版内容策略 (Content Strategy)
 
@@ -28,6 +29,11 @@
     *   **非对称边距**：底部留白比顶部多 5%，因为底部遮挡更严重。
     *   **强制聚拢**：使用 `max-w-[280px]` 限制文字宽度，避开右侧按钮区。
     *   **视觉风格**：手绘风、新野兽派阴影。
+    *   **文字对齐**：对于带背景色的强调文字（Highlight），使用 `inline-block` 配合 `leading-none`。
+        *   **关键兼容性处理**：`html2canvas` 导出时和浏览器预览时的垂直对齐有差异。
+        *   必须在组件中接收 `isExport` 属性。
+        *   如果是 `isExport={true}`，使用 `pt-2 pb-3`；如果是预览模式，使用 `pt-1 pb-2`。
+        *   示例：`const highlightPadding = isExport ? 'pt-2 pb-3' : 'pt-1 pb-2';`
 
 ## 3. 代码输出规范 (Code Structure)
 
@@ -38,9 +44,12 @@
 例如：`src/pages/eth-price-drop-introduce/index.jsx`
 
 ### 3.2 代码模板
-每个页面文件 (`index.jsx`) 必须包含两部分导出：
+每个页面文件 (`index.jsx`) 必须包含三部分导出：
 1.  **`default` 导出**：React 组件本身（配图页面）。
-2.  **`meta` 导出**：包含页面 ID、标题和小红书文案（用于左侧边栏和一键复制）。
+2.  **`slides` 导出**：幻灯片数据数组（用于自动生成图片）。
+3.  **`meta` 导出**：包含页面 ID、标题和小红书文案。
+
+**组件必须接收 `pageIndex` 属性**，用于控制显示哪一张幻灯片（下载功能依赖此属性）。
 
 **标准模板如下：**
 
@@ -48,22 +57,31 @@
 import React, { useState } from 'react';
 import { AlertTriangle, TrendingDown, Trash2, Brain } from 'lucide-react';
 
-// 1. 定义幻灯片数据
-const slides = [
+// 1. 导出幻灯片数据 (必须 export！)
+export const slides = [
   // ... 你的幻灯片数据
 ];
 
-// 2. 定义 React 组件
-const MyPage = () => {
+// 2. 定义 React 组件 (必须接收 pageIndex 和 isExport 参数)
+const MyPage = ({ pageIndex, isExport }) => {
   const [currentSlide, setCurrentSlide] = useState(0);
   const handleNext = () => setCurrentSlide((prev) => (prev + 1) % slides.length);
+
+  // 3. 确定当前显示的幻灯片 (优先使用 pageIndex，用于导出图片)
+  const activeIndex = pageIndex !== undefined ? pageIndex : currentSlide;
+  const slide = slides[activeIndex];
+  const Icon = slide.icon;
+
+  // 4. 样式兼容处理 (导出时文字垂直对齐修正)
+  const highlightPadding = isExport ? 'pt-2 pb-3' : 'pt-1 pb-2';
+
   // ... 渲染逻辑，务必遵守“核心设计要求”中的安全区和样式
   return (
-      // ...
+      // ... 在使用 highlight 样式的地方使用 ${highlightPadding}
   );
 };
 
-// 3. 导出元数据 (关键步骤！)
+// 4. 导出元数据 (关键步骤！)
 export const meta = {
   id: 'unique-slug-id',      // 与文件夹名保持一致
   title: '这里写列表显示的标题', // 侧边栏显示的中文标题
@@ -74,7 +92,7 @@ export const meta = {
   #标签1 #标签2`
 };
 
-// 4. 默认导出组件
+// 5. 默认导出组件
 export default MyPage;
 ```
 

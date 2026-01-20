@@ -1,10 +1,15 @@
-import React, { useState, useEffect } from 'react';
-import { Layout, Copy, Check, Menu, Smartphone } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Layout, Copy, Check, Menu, Smartphone, Download, Loader2 } from 'lucide-react';
+import html2canvas from 'html2canvas';
+import JSZip from 'jszip';
+import { saveAs } from 'file-saver';
 
 function App() {
   const [pages, setPages] = useState([]);
   const [activePageId, setActivePageId] = useState(null);
   const [copied, setCopied] = useState(false);
+  const [isDownloading, setIsDownloading] = useState(false);
+  const hiddenContainerRef = useRef(null);
 
   useEffect(() => {
     // Dynamically import all index.jsx files from src/pages
@@ -16,7 +21,8 @@ function App() {
       return {
         id,
         component: module.default,
-        meta: module.meta || { title: id, copy: 'No copy provided.' }
+        meta: module.meta || { title: id, copy: 'No copy provided.' },
+        slides: module.slides || [] // Get slides data
       };
     });
 
@@ -36,9 +42,76 @@ function App() {
     }
   };
 
+  const handleDownload = async () => {
+    if (!activePage || !activePage.slides.length || isDownloading) return;
+
+    setIsDownloading(true);
+    const zip = new JSZip();
+    const folder = zip.folder(activePage.id);
+
+    try {
+      // Render all slides in hidden container
+      const container = hiddenContainerRef.current;
+      if (!container) return;
+
+      // We need to wait for React to render the slides in the hidden container
+      // But since we can't easily wait for React render in a loop effectively without complex logic,
+      // We will render them one by one or all at once.
+      // Strategy: Render a special export view in the hidden container that lists all slides vertically.
+      
+      // Actually, we can just iterate and use html2canvas on the DOM elements
+      // But we need the DOM elements to exist.
+      // Let's assume we render ALL slides in the hidden container at once.
+      
+      const slideElements = container.querySelectorAll('.slide-export-item');
+      
+      for (let i = 0; i < slideElements.length; i++) {
+        const element = slideElements[i];
+        const canvas = await html2canvas(element, {
+          scale: 1080 / 375, // Scale from mobile width (375px) to HD (1080px)
+          useCORS: true,
+          logging: false,
+          windowWidth: 375,
+          windowHeight: 667
+        });
+        
+        const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+        folder.file(`${i + 1}.png`, blob);
+      }
+
+      const content = await zip.generateAsync({ type: 'blob' });
+      saveAs(content, `${activePage.id}-images.zip`);
+      
+    } catch (error) {
+      console.error('Download failed:', error);
+      alert('下载失败，请查看控制台错误信息');
+    } finally {
+      setIsDownloading(false);
+    }
+  };
+
   return (
     <div className="flex h-screen bg-gray-100 text-gray-800 overflow-hidden font-sans">
       
+      {/* Hidden Container for Exporting */}
+      {activePage && (
+        <div 
+          ref={hiddenContainerRef}
+          style={{ 
+            position: 'fixed', 
+            left: '-9999px', 
+            top: 0, 
+            width: '375px', // Mobile width for correct rendering scale
+          }}
+        >
+          {activePage.slides.map((_, index) => (
+            <div key={index} className="slide-export-item" style={{ width: '375px', height: '667px' }}>
+              <activePage.component pageIndex={index} isExport={true} />
+            </div>
+          ))}
+        </div>
+      )}
+
       {/* Sidebar - Page List */}
       <div className="w-64 bg-white border-r border-gray-200 flex flex-col shadow-sm z-10">
         <div className="p-4 border-b border-gray-200 flex items-center gap-2">
@@ -61,7 +134,7 @@ function App() {
           ))}
         </div>
         <div className="p-4 text-xs text-gray-400 text-center border-t border-gray-100">
-          v0.1.0 Alpha
+          v0.2.0 Beta
         </div>
       </div>
 
@@ -78,17 +151,31 @@ function App() {
                 </h2>
                 <p className="text-sm text-gray-500 mt-1">小红书 / 抖音文案配置</p>
              </div>
-             <button
-                onClick={handleCopy}
-                className={`flex items-center gap-2 px-4 py-2 rounded-md font-medium text-sm transition-all duration-200 ${
-                   copied 
-                   ? 'bg-green-100 text-green-700 border border-green-200' 
-                   : 'bg-gray-900 text-white hover:bg-gray-800 shadow-md hover:shadow-lg'
-                }`}
-             >
-                {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-                {copied ? '已复制' : '一键复制'}
-             </button>
+             <div className="flex gap-2">
+                <button
+                  onClick={handleDownload}
+                  disabled={isDownloading}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-md font-medium text-sm transition-all duration-200 ${
+                    isDownloading
+                    ? 'bg-indigo-100 text-indigo-400 cursor-not-allowed'
+                    : 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-md hover:shadow-lg'
+                  }`}
+                >
+                  {isDownloading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
+                  {isDownloading ? '生成中...' : '打包下载图片'}
+                </button>
+                <button
+                  onClick={handleCopy}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-md font-medium text-sm transition-all duration-200 ${
+                    copied 
+                    ? 'bg-green-100 text-green-700 border border-green-200' 
+                    : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50'
+                  }`}
+                >
+                  {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                  {copied ? '已复制' : '复制文案'}
+                </button>
+             </div>
           </div>
           
           <div className="flex-1 overflow-y-auto p-8 bg-gray-50">

@@ -1,54 +1,54 @@
 import React, { useState } from 'react';
-import { Rocket, Palette, Crop, TrendingUp, Zap } from 'lucide-react';
+import { TrendingDown, AlertTriangle, Skull, DollarSign, ShieldAlert } from 'lucide-react';
 
 export const slides = [
   {
     type: 'cover',
-    title: '1天播放10万+？',
-    subtitle: '0基础小白的逆袭秘籍',
-    bgColor: 'bg-purple-600',
+    title: '抄底？接盘！',
+    subtitle: '别让你的年终奖，变成庄家的年终奖！',
+    bgColor: 'bg-red-600',
     textColor: 'text-white',
-    icon: Rocket,
+    icon: TrendingDown,
   },
   {
     type: 'content',
-    title: '根本不用画画',
-    content: '只要把想法告诉AI，它自己就会“画”出来！连排版都省了！',
-    highlight: '不用画画',
+    title: '还在跌！',
+    content: 'BTC和ETH跌跌不休，你以为是“倒车接人”？醒醒吧！这是在诱敌深入！',
+    highlight: '诱敌深入',
     bgColor: 'bg-yellow-400',
     textColor: 'text-black',
-    icon: Palette,
+    icon: AlertTriangle,
   },
   {
     type: 'content',
-    title: '截图即成品',
-    content: 'AI 直接输出完美图文，我只需要手机截图就能发！',
-    highlight: '截图即成品',
-    bgColor: 'bg-pink-500',
+    title: '精准爆仓',
+    content: '故意反弹一点点，骗你上车，然后一根大阴线直接带走你的止损！',
+    highlight: '精准爆仓',
+    bgColor: 'bg-gray-900',
     textColor: 'text-white',
-    icon: Crop,
+    icon: Skull,
   },
   {
     type: 'content',
-    title: '流量直接爆炸',
-    content: '不到24小时，播放量冲到10万！这泼天的富贵终于轮到我了！',
-    highlight: '流量爆炸',
+    title: '谁在过肥年？',
+    content: '是你吗？不！是拿走你血汗钱的狗庄！他们在开香槟庆祝！',
+    highlight: '狗庄',
     bgColor: 'bg-green-500',
     textColor: 'text-black',
-    icon: TrendingUp,
+    icon: DollarSign,
   },
   {
     type: 'ending',
-    title: '想学吗？',
-    content: '关注我，手把手教你用AI搞定爆款！',
-    cta: '带带我！',
-    bgColor: 'bg-black',
+    title: '管住手！',
+    content: '看不懂盘面结构就别动，保住本金才是硬道理！',
+    cta: '拒绝接盘',
+    bgColor: 'bg-indigo-600',
     textColor: 'text-white',
-    icon: Zap,
+    icon: ShieldAlert,
   }
 ];
 
-const ViralPostStory = ({ pageIndex, isExport }) => {
+const CryptoDipTrap = ({ pageIndex, isExport }) => {
   const [currentSlide, setCurrentSlide] = useState(0);
 
   const handleNext = () => {
@@ -60,6 +60,7 @@ const ViralPostStory = ({ pageIndex, isExport }) => {
   const Icon = slide.icon;
 
   // Fix for html2canvas vertical alignment
+  // In export mode, we use different padding to ensure text is centered
   const highlightPadding = isExport ? 'pt-2 pb-3' : 'pt-1 pb-2';
 
   return (
@@ -128,23 +129,23 @@ const ViralPostStory = ({ pageIndex, isExport }) => {
 };
 
 export const meta = {
-  id: 'how-i-made-viral-ai-post',
-  title: 'AI打造爆款作品经历',
-  copy: `🔥爆了！0基础小白如何1天播放量10w+？🤖
+  id: 'btc-eth-dip-trap',
+  title: '抄底还是接盘？',
+  copy: `😭哭死！以为抄底过肥年，结果被狗庄狠狠上课！📉
 
-家人们谁懂啊！👋 昨天随便发的一条笔记，竟然爆了！
+家人们谁懂啊！看着BTC和ETH跌跌不休，以为机会来了？🛑
 
-我是真的不会画画，PS更是完全不懂。🎨❌
+你以为是“倒车接人”，其实是“灵车漂移”！🏎️⚰️
 
-全靠这个AI神器，我把想法告诉它，啪一下图文就出来了！✨
+辛辛苦苦攒的钱，想着抄底赚一波过个好年，结果全送给狗庄发年终奖了！💸
 
-直接截图就能发，这效率简直离谱！🚀
+盘面结构一眼假，这就是典型的“诱多杀猪盘”！触发你的止损，爆掉你的仓位！💥
 
-不到24小时，播放量冲到10万！这泼天的富贵终于轮到我了？💰
+真正过肥年的，只有那些收割你的庄家！🏦
 
-想学的姐妹在评论区举手，我把方法整理给你们！👇
+听劝！管住手，看不懂结构别乱冲，保住本金才是硬道理！🙏
 
-#AI黑科技 #自媒体干货 #涨粉秘籍 #AI绘画 #副业赚钱`
+#BTC #ETH #抄底 #爆仓 #交易心态 #加密货币 #避坑指南`
 };
 
-export default ViralPostStory;
+export default CryptoDipTrap;

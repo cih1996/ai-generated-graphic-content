@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { TrendingDown, Trash2, Brain, AlertTriangle } from 'lucide-react';
 
-const slides = [
+export const slides = [
   {
     type: 'cover',
     title: '合约 = 碎钞机？',
@@ -39,15 +39,19 @@ const slides = [
   }
 ];
 
-const ContractTradingWarning = () => {
+const ContractTradingWarning = ({ pageIndex, isExport }) => {
   const [currentSlide, setCurrentSlide] = useState(0);
 
   const handleNext = () => {
     setCurrentSlide((prev) => (prev + 1) % slides.length);
   };
 
-  const slide = slides[currentSlide];
+  const activeIndex = pageIndex !== undefined ? pageIndex : currentSlide;
+  const slide = slides[activeIndex];
   const Icon = slide.icon;
+
+  // Fix for html2canvas vertical alignment
+  const highlightPadding = isExport ? 'pt-2 pb-3' : 'pt-1 pb-2';
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-900 p-4">
@@ -87,7 +91,7 @@ const ContractTradingWarning = () => {
                       <React.Fragment key={i}>
                         {part}
                         {i < arr.length - 1 && (
-                          <span className={`${slide.bgColor === 'bg-yellow-400' ? 'bg-black text-white' : 'bg-yellow-400 text-black'} px-2 mx-1 transform -skew-x-6 inline-block shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]`}>
+                          <span className={`${slide.bgColor === 'bg-yellow-400' ? 'bg-black text-white' : 'bg-yellow-400 text-black'} px-2 ${highlightPadding} mx-1 transform -skew-x-6 inline-block leading-none shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]`}>
                             {slide.highlight}
                           </span>
                         )}
@@ -101,8 +105,8 @@ const ContractTradingWarning = () => {
 
           {/* Ending CTA */}
           {slide.type === 'ending' && (
-             <div className="mt-12 animate-bounce">
-                <span className="bg-black text-white px-8 py-4 rounded-full text-2xl font-black shadow-[6px_6px_0px_0px_rgba(255,255,255,0.5)] border-2 border-white">
+             <div className="mt-12">
+                <span className="bg-white text-black px-8 py-4 rounded-full text-2xl font-black shadow-[6px_6px_0px_0px_rgba(100,100,100,0.5)] border-2 border-black inline-flex items-center justify-center">
                    {slide.cta} 👇
                 </span>
              </div>
@@ -110,10 +114,6 @@ const ContractTradingWarning = () => {
           
         </div>
 
-        {/* Footer/Watermark */}
-        <div className="absolute bottom-12 w-full text-center opacity-60 text-sm font-mono font-bold tracking-widest uppercase">
-          tap to continue
-        </div>
       </div>
     </div>
   );
